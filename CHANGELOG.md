@@ -2,5 +2,4 @@
 
 ## 6-Dec-18
 
-- Initial version
-
+- Should be useful in projects. (not actually tested)

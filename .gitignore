@@ -1,5 +1,8 @@
-
 # Make sure we don't get 'project/build.properties' to the image
 /project/
 
+# Created by 'dive' tool (checking Docker layers)
+/dive.log
 
+# IntelliJ
+/.idea/

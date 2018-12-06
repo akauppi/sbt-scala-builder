@@ -1,0 +1,5 @@
+
+# Make sure we don't get 'project/build.properties' to the image
+/project/
+
+

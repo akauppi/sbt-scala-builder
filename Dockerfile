@@ -5,36 +5,30 @@
 #
 # Changes:
 #   Naming:
-#     - naming as 'sbt-scala-docker' since a) sbt is more important than Scala (in this context), b) Docker is implicitly
-#       included in Google's `javac:8` base image.
+#     - naming as 'sbt-scala' since sbt is more important than Scala in this context
 #   Versions:
-#     - More current sbt version (1.0.2 -> 1.2.7)
-#     - JDK version not mentioned in the version - it matters less for Scala builds
+#     - More current sbt version (1.0.4 -> 1.2.7)
+#   Contents:
+#     - Avoiding Docker installation (done implicitly by Google's 'javac' image), to reduce size.
+#     - Only building one image (no 0.13.x for legacy); however your project may of course specify any version it
+#       wants for project compilation ('project/build.properties').
 #   Usage:
-#     - Not needing `cloudbuild.yaml` since only one image is created (only sbt 1.x provided)
+#     - no 'cloudbuild.yaml' since we only build one image
 #   Internal:
 #     - uses a fixed intermediate file name ("out.zip")
-#     - removed installation of 'bc' (what needed that, maybe a copy-paste?)
-#   Features:
+#     - removed installation of 'bc' (looks like a copy-paste remnant; was it needed?)
+#   Fixes:
 #     - pre-fetches Scala libraries (earlier does not, despite its name)
 #     - 'sbt' is launched once, which is when it fetches its own underlying libraries (earlier does not)
 #
-# Note:
-#   Google recommends that builders run a "sanity check" command (i.e. execute the installed tool), but the earlier
-#   image does not do this.
-#
-# Note:
-#   "Installing sbt on Linux" suggests using apt-get, instead of raw curl download (that used to be the way).
-#   We follow the curl/unzip route of the community builder at least for now. It does work.
-#       -> https://www.scala-sbt.org/1.x/docs/Installing-sbt-on-Linux.html
-#
 
 #---
-# This is 940 MB and also carries Docker with it.
-#   - base image sources -> https://github.com/GoogleCloudPlatform/cloud-builders/tree/master/javac
-#   - New builders for Maven and Java 11 (Issue 412) -> https://github.com/GoogleCloudPlatform/cloud-builders/issues/412
+# Using the base image of Google's 'javac' image. This leaves addition of Docker to the application (derived image) level.
 #
-FROM gcr.io/cloud-builders/java/javac:8
+# Note: Google does not offer JDK 9+ at this point (Dec-18). You can try using a public OpenJDK image here.
+#
+FROM launcher.gcr.io/google/openjdk8
+    #was: gcr.io/cloud-builders/java/javac:8
 
 # sbt version is only here (no 'project/build.properties' file)
 #
@@ -43,6 +37,14 @@ ARG SHA=1e81909fe2ba931684263fa58e9710e41ab50fe66bb0c20d274036db42caa70e
 ARG BASE_URL=https://github.com/sbt/sbt/releases/download
 ARG _OUT=out.zip
 
+# Installation of 'sbt'
+#
+# Note:
+#   sbt docs > "Installing sbt on Linux"[1] suggests using apt-get, instead of raw curl download (that used to be the
+#   way). We follow the curl/unzip route of the community builder at least for now. It does work.
+#
+#   [1]: https://www.scala-sbt.org/1.x/docs/Installing-sbt-on-Linux.html
+#
 RUN apt-get update -qqy \
   && apt-get install -qqy curl \
   && mkdir -p /usr/share \
@@ -57,12 +59,14 @@ RUN apt-get update -qqy \
 
 ENTRYPOINT ["/usr/bin/sbt"]
 
-# Running 'sbt' is needed, in order for it to download required libraries.
-# This also loads the language libraries of Scala versions given.
+# Running 'sbt' once is needed, in order to download required libraries. This also loads the language libraries for Scala.
+#
+# Note: Set of Scala versions supported can be extended in one's derived builder image. The union of these will be
+#       cached.
 #
 # Note: It seems we cannot provide the build definition from stdin.
 #
-RUN echo 'crossScalaVersions := Seq("2.12.8", "2.12.7")' > temp.sbt \
+RUN echo 'crossScalaVersions := Seq("2.12.8", "2.12.7")' > primer.sbt \
   && sbt "+update" \
-  && rm temp.sbt \
+  && rm primer.sbt \
   && rm -rf project target

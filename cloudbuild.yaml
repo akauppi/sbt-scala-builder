@@ -1,0 +1,24 @@
+#
+# cloudbuild.yaml
+#
+# We want to provide both the versioned image and a non-versioned tag to it. This seems to need a YAML file, instead
+# of simply using the Dockerfile.
+#
+# i.e. 'gcloud builds submit' (Google Cloud SDK 227) does not process multiple '-t' parameters but only the last one
+#     (otherwise we could tag the builder there).
+#
+# Usage:
+#   $ gcloud builds submit . --config=cloudbuild.yaml
+#
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg=SBT_VERSION=1.2.7'
+      - '--build-arg=SHA=1e81909fe2ba931684263fa58e9710e41ab50fe66bb0c20d274036db42caa70e'
+      - '--tag=eu.gcr.io/$PROJECT_ID/sbt-scala:1.2.7-jdk8'
+      - '--tag=eu.gcr.io/$PROJECT_ID/sbt-scala'
+      - '.'
+images:
+  - 'eu.gcr.io/$PROJECT_ID/sbt-scala:1.2.7-jdk8'
+  - 'eu.gcr.io/$PROJECT_ID/sbt-scala'

@@ -3,6 +3,7 @@
 #
 # This avoids unnecessary files from being sent to the cloud (and stored) by 'gcloud builds submit'.
 #
+
 *
 ^/cloudbuild.yaml
 ^/Dockerfile

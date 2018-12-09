@@ -184,11 +184,30 @@ RUN sbt "+update" \
   && rm -rf project target
 ```
 
+To submit your derived builder from simply a `Dockerfile`:
+
+```
+$ export PROJECT_ID = $(gcloud config get-value project 2> /dev/null)
+$ gcloud builds submit -t eu.gcr.io/$PROJECT_ID/sbt-scala-primed .
+```
+
+---
+
+Note: Whatever you call your builder is of course up to you. The `-primed` used above feels good - it's like spreading a primer paint before the real one. Once the real paint (your real build) is there, the primer no longer shows. :)
+
+---
+
 Note that any other libraries and versions will be perfectly fine to use, as well. It's just that these get cached into the build image, and as such will not need to be repeatedly fetched.
 
 ### If you need Docker
 
-For some builds, e.g. towards GKE, you will need Docker. You can bring it into your derived builder by copy-pasting from [here](https://github.com/GoogleCloudPlatform/cloud-builders/blob/master/javac/Dockerfile).
+You probably don't.
+
+Your Cloud Build steps can be kept separate for Scala builds, and for dockerization. If this is the case, you won't need Docker in the sbt-scala image. :)
+
+If you build your Docker image using some "helper" framework like [sbt-native-packager](https://www.scala-sbt.org/sbt-native-packager/index.html)'s Docker plugin, you need Docker in your sbt builder image.
+
+In this case, add it into your derived builder by copy-pasting from [here](https://github.com/GoogleCloudPlatform/cloud-builders/blob/master/javac/Dockerfile).
 
 ```
 ARG DOCKER_VERSION=18.06.1~ce~3-0~debian
@@ -213,9 +232,8 @@ RUN \
    apt-get clean
 ```   
 
-<!-- tbd. 
-See `derived-samples` for these as samples.
--->
+We could also provide two base images in this repo: `sbt-scala` and `sbt-scala-docker`.
+
 
 ## Coordinating with the community
 

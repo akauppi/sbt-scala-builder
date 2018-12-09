@@ -24,17 +24,17 @@ This image can be used as-is, or as a base image for bringing in project specifi
 
 - `gcloud` installed and properly configured
 
-  The Docker image will be pushed to the Container Registry (and Google Cloud Storage bucket) of the project you are currently logged in as. Check this before proceding:
+The Docker image will be pushed to the Container Registry (and Google Cloud Storage bucket) of the project you are currently logged in as. Check this before proceding:
 
-  ```
+```
 $ gcloud init
 ```
 
-   ---
+---
 
-   Note: If you plan to use a single builder for all of your Google Cloud projects, or host the builder for other accounts as well, it may be good to set up a separate project just for the builder. The project name will show in the name of the builder step for those using it.
+Note: If you plan to use a single builder for all of your Google Cloud projects, or host the builder for other accounts as well, it may be good to set up a separate project just for the builder. The project name will show in the name of the builder step for those using it.
 
-   ---
+---
 
 Recommended (optional):
 

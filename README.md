@@ -18,7 +18,7 @@ Google Cloud Build builder (Docker image) that brings in:
 
 The purpose is to speed up Cloud Build builds that involve `sbt` and Scala, and to provide the slimmest image for doing so. 
 
-This image can be used as-is, or as a base image for bringing in project specific libraries (to further speed up your actual build case).
+This image can be used as-is, or as a base image for bringing in project specific libraries to further speed up your specific build case.
 
 ## Requirements
 
@@ -83,43 +83,6 @@ The "source" (bucket mentioned above) contains copies of all the files in this d
 
 The "images" shows the name of the image that you can now use for builds within this same project. 
 
-
-### Availability to other projects
-
-To make the image available for your other projects, you need to grant access rights to the underlying Google Cloud Storage bucket.
-
-- Go to [Google Cloud Platform Console](https://console.cloud.google.com) > Storage > Browser
-- Pick the "[eu.]artifacts.<project id>.appspot.com" bucket
-
-  ![](.images/browse-bucket.png)
-
-	- `⋮` > `Edit bucket permissions`
-		- Add an email address (for a service account?) and grant right `Storage > Storage Object Viewer` right
-
-		Note: To see, which email addresses you can use, the help hover icon is great:
-		
-  		![](.images/add-users-help.png)
-
-
-<!-- disabled
-### Making it public
-
-Click the "Edit access" here:
-
-![](.images/making-public.png)
-
-- - -
-
-Note: Google warns that you are eligible for "egress cost" of people using a public image. Let's see how much that is.
-
-Prices vary by destination. The highest (6-Dec-18) is $0.23 per GB (to China). 
-
-Image size is 1.2GB. This means $0.06 from you each time someone (from China) fetches your image.
-
-That's considerable.
-
-- - -
--->
 
 ## Using the builder
 
@@ -233,6 +196,36 @@ RUN \
 ```   
 
 We could also provide two base images in this repo: `sbt-scala` and `sbt-scala-docker`.
+
+
+## Availability to other projects
+
+To make the builder available for your other projects, you need to grant access rights to the underlying Google Cloud Storage bucket.
+
+- In the other project, under `IAM & admin`, see: 
+
+  ![](.images/cloud-build-service-account.png)
+
+  Pick up the `...@cloudbuild.serviceaccount.com` email address. This is what you wish to grant access to.
+
+- In the project having the builder image, under `Storage > Browser`
+  - Pick the `[eu.]artifacts.<project-id>.appspot.com` bucket
+
+    ![](.images/browse-bucket.png)
+
+    - `⋮` > `Edit bucket permissions`
+      - Add the service account (and maybe also your own Gmail account) and grant `Storage > Storage Object Viewer` right.
+
+			Note: To see, which email addresses you can use, the help hover icon is great:
+		
+	  		![](.images/add-users-help.png)
+
+<!-- disabled (for now; not tested)
+
+Note: Granting right to `projectViewer:<target-project>` might be simpler, and more descriptive.
+-->
+
+The reason to include also yourself in the access rights is so that you can Docker pull the image locally, for development.
 
 
 ## Coordinating with the community

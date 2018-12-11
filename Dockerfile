@@ -66,7 +66,9 @@ ENTRYPOINT ["/usr/bin/sbt"]
 #
 # Note: It seems we cannot provide the build definition from stdin.
 #
+# Note: Use '+compile' instead of '+update' to also pre-compile 'compiler-bridge_2.12'.
+#
 RUN echo 'crossScalaVersions := Seq("2.12.8", "2.12.7")' > primer.sbt \
-  && sbt "+update" \
+  && sbt "+compile" \
   && rm primer.sbt \
   && rm -rf project target

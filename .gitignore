@@ -1,3 +1,7 @@
+# left if one runs 'sbt', locally
+/project/
+/target/
+
 # Created by 'dive' tool
 /dive.log
 

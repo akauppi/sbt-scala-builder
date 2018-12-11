@@ -5,5 +5,5 @@
 #
 
 *
-^/cloudbuild.yaml
-^/Dockerfile
+!/cloudbuild.yaml
+!/Dockerfile

@@ -39,7 +39,7 @@ ADD build.sbt .
 
 # Be eventually a user rather than root
 #
-RUN useradd -g sudo -ms /bin/bash user
+RUN useradd -ms /bin/bash user
 RUN chown -R user /build
 
 # Installation of 'sbt' (as root)
@@ -68,7 +68,6 @@ RUN apt-get update -qqy \
   && mv sbt "/usr/share/sbt-${SBT_VER}" \
   && ln -s "/usr/share/sbt-${SBT_VER}/bin/sbt" /usr/bin/sbt \
   && apt-get remove -qqy --purge curl \
-  && apt-get install -qqy gnupg \
   && rm /var/lib/apt/lists/*_*
 
 ENTRYPOINT ["/usr/bin/sbt"]
@@ -88,3 +87,7 @@ USER user
 #
 RUN sbt "+compile" \
   && rm -rf project target
+
+# TEST that we can create folders in the work dir, as a user
+#
+#RUN install -d project/abc

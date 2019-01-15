@@ -4,6 +4,7 @@
 
 - Run as a user (not root)
 - Clarifications why installing from source is better than using 'apt-get' (which is recommended by sbt)
+- only supporting one Scala version (easy to change)
 
 ## 9-Dec-18
 

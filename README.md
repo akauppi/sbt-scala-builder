@@ -77,7 +77,7 @@ Note: If `gcloud builds submit` respected multiple tag parametets (like `docker 
 $ gcloud builds submit .
 ...
 ID                                    CREATE_TIME                DURATION  SOURCE                                                                                IMAGES                                     STATUS
-5ef438bd-da5a-46bc-aaeb-84dfa70fe227  2018-12-09T10:24:10+00:00  1M51S     gs://asu-181118_cloudbuild/source/1544351046.98-4a98e7eb6fea44b09e1c326af9b0551c.tgz  eu.gcr.io/your-project-123/sbt-scala:1.2.7-jdk8  SUCCESS
+5ef438bd-da5a-46bc-aaeb-84dfa70fe227  2018-12-09T10:24:10+00:00  1M51S     gs://asu-181118_cloudbuild/source/1544351046.98-4a98e7eb6fea44b09e1c326af9b0551c.tgz  eu.gcr.io/your-project-123/sbt-scala:1.2.8-jdk8  SUCCESS
 ```
 
 The "source" (bucket mentioned above) contains copies of all the files in this directory. That's what `gcloud` built the builder from.

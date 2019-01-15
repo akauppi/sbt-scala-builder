@@ -87,7 +87,3 @@ USER user
 #
 RUN sbt "+compile" \
   && rm -rf project target
-
-# TEST that we can create folders in the work dir, as a user
-#
-#RUN install -d project/abc

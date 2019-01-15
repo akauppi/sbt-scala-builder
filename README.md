@@ -245,8 +245,6 @@ Could try the "puller pays" model, but it may cause other complications. Not sur
 
 ## References
 
-- [Google Cloud Build community images](https://github.com/GoogleCloudPlatform/cloud-builders-community) (GitHub) > scala-sbt
-
 - Container Registry 
 	- [Configuring access control](https://cloud.google.com/container-registry/docs/access-control) (GCP documentation)
 

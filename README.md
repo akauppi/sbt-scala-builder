@@ -30,17 +30,18 @@ The Docker image will be pushed to the Container Registry (and Google Cloud Stor
 $ gcloud init
 ```
 
+<!-- disabled
 ---
 
 Note: If you plan to use a single builder for all of your Google Cloud projects, or host the builder for other accounts as well, it may be good to set up a separate project just for the builder. The project name will show in the name of the builder step for those using it.
 
 ---
+-->
 
 Recommended (optional):
 
 - `docker`
 - [dive](https://github.com/wagoodman/dive) - "A tool for exploring each layer in a docker image"
-
 
 
 ## Build the image locally (optional)
@@ -53,7 +54,7 @@ $ docker build .
 Successfully built 29a6e8655e15
 ```
 
-It should result in an image of ~490MB in size, containing:
+It should result in an image of ~500MB in size, containing:
 
 - JDK
 - sbt pre-installed
@@ -76,22 +77,45 @@ Note: If `gcloud builds submit` respected multiple tag parametets (like `docker 
 $ gcloud builds submit .
 ...
 ID                                    CREATE_TIME                DURATION  SOURCE                                                                                IMAGES                                     STATUS
-5ef438bd-da5a-46bc-aaeb-84dfa70fe227  2018-12-09T10:24:10+00:00  1M51S     gs://asu-181118_cloudbuild/source/1544351046.98-4a98e7eb6fea44b09e1c326af9b0551c.tgz  eu.gcr.io/asu-181118/sbt-scala:1.2.7-jdk8  SUCCESS
+5ef438bd-da5a-46bc-aaeb-84dfa70fe227  2018-12-09T10:24:10+00:00  1M51S     gs://asu-181118_cloudbuild/source/1544351046.98-4a98e7eb6fea44b09e1c326af9b0551c.tgz  eu.gcr.io/your-project-123/sbt-scala:1.2.7-jdk8  SUCCESS
 ```
 
 The "source" (bucket mentioned above) contains copies of all the files in this directory. That's what `gcloud` built the builder from.
 
 The "images" shows the name of the image that you can now use for builds within this same project. 
 
+### Seeing the image in Container Registry
+
+```
+$ export PROJECT_ID=$(gcloud config get-value project 2> /dev/null)
+```
+
+```
+$ gcloud container images list --repository eu.gcr.io/$PROJECT_ID
+NAME
+eu.gcr.io/ig-builders-110119/sbt-scala
+...
+```
+
+```
+$ gcloud container images list-tags eu.gcr.io/$PROJECT_ID/sbt-scala
+DIGEST        TAGS               TIMESTAMP
+fbf9f99660c8  1.2.8-jdk8,latest  2019-01-15T20:18:59
+```
 
 ## Using the builder
 
-From your project's `cloudbuild.yaml`, you can now:
+In repositories being built under the same GCP project, you can now:
 
 ```
+# cloudbuild.yaml
+steps:
 - name: 'gcr.io/<your project>/sbt-scala'
-  ...
+  args:
+  - 'build'
 ```
+
+That runs `sbt build` on the project.
 
 But this is not the end, yet. 
 
@@ -139,15 +163,15 @@ libraryDependencies ++= Seq(
 `Dockerfile`:
 
 ```
-FROM eu.gcr.io/<your builder project>/sbt-scala:1.2.7-jdk8
+FROM eu.gcr.io/<your-project>/sbt-scala:1.2.8-jdk8
 
-ADD build.sbt build.sbt
+ADD build.sbt .
 
 RUN sbt "+update" \
   && rm -rf project target
 ```
 
-To submit your derived builder from simply a `Dockerfile`:
+To submit your derived builder to the Container Registry:
 
 ```
 $ export PROJECT_ID = $(gcloud config get-value project 2> /dev/null)
@@ -162,45 +186,25 @@ Note: Whatever you call your builder is of course up to you. The `-primed` used 
 
 Note that any other libraries and versions will be perfectly fine to use, as well. It's just that these get cached into the build image, and as such will not need to be repeatedly fetched.
 
-### If you need Docker
+### You don't need Docker in your builder (unless...)
 
-You probably don't.
+Cloud Build is awesome in that it allows multiple, separate custom tools to be used, provided in the `name`.
 
-Your Cloud Build steps can be kept separate for Scala builds, and for dockerization. If this is the case, you won't need Docker in the sbt-scala image. :)
+Use one builder for running `sbt`, another for creating a Docker image.
 
-If you build your Docker image using some "helper" framework like [sbt-native-packager](https://www.scala-sbt.org/sbt-native-packager/index.html)'s Docker plugin, you need Docker in your sbt builder image.
+However, sometimes you will need to have both `sbt` and Docker in the same builder image: 
 
-In this case, add it into your derived builder by copy-pasting from [here](https://github.com/GoogleCloudPlatform/cloud-builders/blob/master/javac/Dockerfile).
+- using [sbt-native-packager](https://www.scala-sbt.org/sbt-native-packager/index.html)'s Docker plugin for creating your Docker image[^1]
+- using [docker-it-scala](https://github.com/whisklabs/docker-it-scala) to run tests with dockerized services
 
-```
-ARG DOCKER_VERSION=18.06.1~ce~3-0~debian
+[^1]: Not needed. A lighter approach is to do a universal `sbt stage` and maintain a separate `Dockerfile`.
 
-# Install Docker based on instructions from:
-# https://docs.docker.com/engine/installation/linux/docker-ce/debian
-RUN \
-   apt-get -y update && \
-   apt-get --fix-broken -y install && \
-   apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common && \
-   curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
-   apt-key fingerprint 9DC858229FC7DD38854AE2D88D81803C0EBFCD88 && \
-   add-apt-repository \
-      "deb [arch=amd64] https://download.docker.com/linux/debian \
-      $(lsb_release -cs) \
-      stable" && \
-   apt-get -y update && \
-   apt-get -y install docker-ce=${DOCKER_VERSION} && \
-
-   # Clean up build packages
-   apt-get remove -y --purge curl gnupg2 software-properties-common && \
-   apt-get clean
-```   
-
-We could also provide two base images in this repo: `sbt-scala` and `sbt-scala-docker`.
+In these cases, add Docker installation to your derived builder by copy-pasting from [here](https://github.com/GoogleCloudPlatform/cloud-builders/blob/master/javac/Dockerfile).
 
 
 ## Availability to other projects
 
-To make the builder available for your other projects, you need to grant access rights to the underlying Google Cloud Storage bucket.
+To make the builder image available to other GCP projects, you need to grant access rights to the underlying Google Cloud Storage bucket.
 
 - In the other project, under `IAM & admin`, see: 
 
@@ -214,25 +218,30 @@ To make the builder available for your other projects, you need to grant access 
     ![](.images/browse-bucket.png)
 
     - `⋮` > `Edit bucket permissions`
-      - Add the service account (and maybe also your own Gmail account) and grant `Storage > Storage Object Viewer` right.
+      - Add the service account and grant `Storage > Storage Object Viewer` right.
 
 			Note: To see, which email addresses you can use, the help hover icon is great:
 		
 	  		![](.images/add-users-help.png)
 
-<!-- disabled (for now; not tested)
+---
 
-Note: Granting right to `projectViewer:<target-project>` might be simpler, and more descriptive.
--->
+Note: You may also grant `projectViewer:<target-project>` the rights; this would allow anyone working on that project to pull the image for local builds. 
 
-The reason to include also yourself in the access rights is so that you can Docker pull the image locally, for development.
+Disclaimer: This is optional and hasn't been fully tested. Give a [line](mailto:akauppi@gmail.com) if it works, or doesn't.
 
+---
 
-## Coordinating with the community
+## Improvement ideas
 
-If you like this approach, and have time at your hands, it would be appreciated to merge this with the community approach. It's the place where newcomers to Cloud Build + Scala will come for a solution, and the current one is not only dated, but also not fully optimized.
+See the Issues for open issues that you can provide a helping hand with.
 
-The author can be reached at twitter as `AskoKauppi`. 
+### Hosting the builder publicly
+
+It would be great, but the prices GCP has on pulling images are non-negligible. Each image being 500MB, it's a safer bet for everyone to host their own.
+
+Could try the "puller pays" model, but it may cause other complications. Not sure.
+
 
 ## References
 

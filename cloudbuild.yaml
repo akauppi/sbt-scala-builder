@@ -8,17 +8,17 @@
 #     (otherwise we could tag the builder there).
 #
 # Usage:
-#   $ gcloud builds submit . --config=cloudbuild.yaml
+#   $ gcloud builds submit .
 #
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
-      - '--build-arg=SBT_VERSION=1.2.7'
-      - '--build-arg=SHA=1e81909fe2ba931684263fa58e9710e41ab50fe66bb0c20d274036db42caa70e'
-      - '--tag=eu.gcr.io/$PROJECT_ID/sbt-scala:1.2.7-jdk8'
+      - '--build-arg=SBT_VER=1.2.8'
+      - '--build-arg=SBT_SHA=f4b9fde91482705a772384c9ba6cdbb84d1c4f7a278fd2bfb34961cd9ed8e1d7'
+      - '--tag=eu.gcr.io/$PROJECT_ID/sbt-scala:1.2.8-jdk8'
       - '--tag=eu.gcr.io/$PROJECT_ID/sbt-scala'
       - '.'
 images:
-  - 'eu.gcr.io/$PROJECT_ID/sbt-scala:1.2.7-jdk8'
+  - 'eu.gcr.io/$PROJECT_ID/sbt-scala:1.2.8-jdk8'
   - 'eu.gcr.io/$PROJECT_ID/sbt-scala'

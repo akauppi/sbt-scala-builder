@@ -234,7 +234,7 @@ Disclaimer: This is optional and hasn't been fully tested. Give a [line](mailto:
 
 ## Improvement ideas
 
-See the Issues for open issues that you can provide a helping hand with.
+See the [Issues](https://github.com/akauppi/sbt-scala-builder/issues) for open issues that you can provide a helping hand with.
 
 ### Hosting the builder publicly
 

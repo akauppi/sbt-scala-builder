@@ -35,7 +35,8 @@ FROM launcher.gcr.io/google/openjdk8
 #
 WORKDIR /build
 
-ADD build.sbt .
+#disabled
+#ADD build.sbt .
 
 # Be eventually a user rather than root
 #
@@ -81,9 +82,19 @@ USER user
 # Note: Set of Scala versions supported can be extended in one's derived builder image. The union of these will be
 #       cached.
 #
-# Note: It seems we cannot provide the build definition from stdin.
-#
-# Note: Use '+compile' instead of '+update' to also pre-compile 'compiler-bridge_2.12'.
-#
-RUN sbt "+compile" \
+RUN sbt 'set scalaVersion := "2.11.8"' compile \
   && rm -rf project target
+
+# 'compiler-bridge' compilation:
+#
+# It seems cross-compiling ('+compile') is connected to a problem that causes the 'compiler-bridge' not being
+# pre-compiled. See -> https://github.com/sbt/sbt/issues/3469
+#
+# We don't really need cross-compiling. If you want multiple Scala versions cached, just enable this.
+#
+# The files will be cached under:
+#   ~/.ivy2/cache/org.scala-sbt/compiler-bridge_2.12/jars/
+#     compiler-bridge_2.12-1.2.5.jar
+#
+#RUN sbt 'set scalaVersion := "2.11.7"' compile \
+#  && rm -rf project target

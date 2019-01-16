@@ -1,5 +1,9 @@
 # Changelog
 
+## 16-Jan-19
+
+- Trying without `build.sbt` and with no cross-compiling. *Hoping* this may cause `compiler-bridge` to be properly cached (but likely it's not...).
+
 ## 15-Jan-19
 
 - Run as a user (not root)
